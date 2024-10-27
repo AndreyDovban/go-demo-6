@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"net/http"
 
-	"go-demo-6/configs"
-	hello "go-demo-6/internal/hello"
+	// "go-demo-6/configs"
+
+	auth "go-demo-6/internal/auth"
 )
 
 func main() {
-	conf := configs.LoadConfig()
+	// conf := configs.LoadConfig()
 	router := http.NewServeMux()
-	hello.NewHelloHandler(router)
+	auth.NewAuthHandler(router)
 
 	server := &http.Server{
 		Addr:    ":3000",
