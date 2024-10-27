@@ -5,6 +5,7 @@ import (
 	"go-demo-6/configs"
 	"net/http"
 
+	req "go-demo-6/pkg/request"
 	resp "go-demo-6/pkg/response"
 )
 
@@ -26,20 +27,28 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		secret := handler.Config.Auth.Secret
-		fmt.Println("Login ", secret)
-		data := LoginResponse{
-			Token: "123 !!!",
+		body, err := req.HandleBody[LoginRequest](&w, r)
+		if err != nil {
+			return
 		}
 
-		resp.Json(w, data, 202)
+		fmt.Println(body)
+
+		resp.Json(w, "Successful authorized", 200)
 
 	}
 }
 
 func (handler *AuthHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Register")
+		body, err := req.HandleBody[RegisterRequest](&w, r)
+		if err != nil {
+			return
+		}
+
+		fmt.Println(body)
+
+		resp.Json(w, "Successful registration", 200)
 
 	}
 }
