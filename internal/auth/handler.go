@@ -1,54 +1,37 @@
 package auth
 
 import (
-	"fmt"
 	"go-demo-6/configs"
+	"go-demo-6/pkg/request"
+	"go-demo-6/pkg/response"
 	"net/http"
-
-	req "go-demo-6/pkg/request"
-	resp "go-demo-6/pkg/response"
 )
 
-type AuthHandlerDeps struct {
-	*configs.Config
+type HandlerAuth struct {
+	Config *configs.Config
 }
 
-type AuthHandler struct {
-	*configs.Config
-}
-
-func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
-	handler := &AuthHandler{
-		Config: deps.Config,
+func NewHandlerAuth(router *http.ServeMux, config *configs.Config) {
+	handler := &HandlerAuth{
+		Config: config,
 	}
 	router.HandleFunc("POST /auth/login", handler.Login())
 	router.HandleFunc("POST /auth/register", handler.Register())
+
 }
 
-func (handler *AuthHandler) Login() http.HandlerFunc {
+func (handler *HandlerAuth) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		body, err := req.HandleBody[LoginRequest](&w, r)
-		if err != nil {
-			return
-		}
+		request.HandleBody[LoginRequest](&w, r)
 
-		fmt.Println(body)
-
-		resp.Json(w, "Successful authorized", 200)
-
+		response.Json(w, "Successful login", 200)
 	}
 }
 
-func (handler *AuthHandler) Register() http.HandlerFunc {
+func (handler *HandlerAuth) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		body, err := req.HandleBody[RegisterRequest](&w, r)
-		if err != nil {
-			return
-		}
+		request.HandleBody[RegisterRequest](&w, r)
 
-		fmt.Println(body)
-
-		resp.Json(w, "Successful registration", 200)
-
+		response.Json(w, "Successful register", 200)
 	}
 }

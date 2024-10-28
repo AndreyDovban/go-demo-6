@@ -2,19 +2,15 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-
 	"go-demo-6/configs"
-
-	auth "go-demo-6/internal/auth"
+	"go-demo-6/internal/auth"
+	"net/http"
 )
 
 func main() {
-	conf := configs.LoadConfig()
+	config := configs.LoadConfig()
 	router := http.NewServeMux()
-	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
-		Config: conf,
-	})
+	auth.NewHandlerAuth(router, config)
 
 	server := &http.Server{
 		Addr:    ":3000",

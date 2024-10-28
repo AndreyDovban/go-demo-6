@@ -1,22 +1,24 @@
 package request
 
 import (
-	resp "go-demo-6/pkg/response"
+	"go-demo-6/pkg/response"
 	"net/http"
 )
 
-func HandleBody[T any](w *http.ResponseWriter, r *http.Request) (*T, error) {
-	body, err := Decode[T](r.Body)
+func HandleBody[T any](w *http.ResponseWriter, r *http.Request) (T, error) {
+	var payload T
+
+	payload, err := Decode[T](r.Body)
 	if err != nil {
-		resp.Json(*w, err.Error(), 402)
-		return nil, err
+		response.Json(*w, err.Error(), 402)
+		return payload, err
 	}
 
-	err = IsValid(body)
+	err = IsValid(payload)
 	if err != nil {
-		resp.Json(*w, err.Error(), 402)
-		return nil, err
+		response.Json(*w, err.Error(), 402)
+		return payload, err
 	}
-	return &body, nil
 
+	return payload, nil
 }
