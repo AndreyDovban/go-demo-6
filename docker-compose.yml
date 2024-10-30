@@ -1,6 +1,7 @@
 services:
     postgres:
         container_name: postgres_go
+        restart: always
         image: postgres:16.4
         environment:
             POSTGRES_USER: postgres
