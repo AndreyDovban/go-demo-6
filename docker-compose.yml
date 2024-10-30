@@ -1,8 +1,8 @@
 services:
     postgres:
         container_name: postgres_go
-        restart: always
         image: postgres:16.4
+        restart: always
         environment:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: my_pass
