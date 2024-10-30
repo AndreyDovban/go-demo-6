@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+
 	config := configs.LoadConfig()
 	_ = db.NewDb(config)
 	router := http.NewServeMux()
