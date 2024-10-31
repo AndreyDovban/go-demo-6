@@ -7,13 +7,17 @@ import (
 	"net/http"
 )
 
+type AuthHandlerDeps struct {
+	*configs.Config
+}
+
 type HandlerAuth struct {
 	Config *configs.Config
 }
 
-func NewHandlerAuth(router *http.ServeMux, config *configs.Config) {
+func NewHandlerAuth(router *http.ServeMux, deps AuthHandlerDeps) {
 	handler := &HandlerAuth{
-		Config: config,
+		Config: deps.Config,
 	}
 	router.HandleFunc("POST /auth/login", handler.Login())
 	router.HandleFunc("POST /auth/register", handler.Register())
