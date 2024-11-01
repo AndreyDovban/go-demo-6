@@ -2,22 +2,21 @@ package link
 
 import (
 	"fmt"
-	"go-demo-6/configs"
 	"go-demo-6/pkg/response"
 	"net/http"
 )
 
 type LinkHandlerDeps struct {
-	Config *configs.Config
+	LinkRepository *LinkRepository
 }
 
 type HandlerLink struct {
-	Config *configs.Config
+	LinkRepository *LinkRepository
 }
 
 func NewHandlerLink(router *http.ServeMux, deps LinkHandlerDeps) {
 	handler := &HandlerLink{
-		Config: deps.Config,
+		LinkRepository: deps.LinkRepository,
 	}
 
 	router.HandleFunc("POST /link", handler.Create())
@@ -46,6 +45,9 @@ func (handler *HandlerLink) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("update")
 
+		id := r.PathValue("id")
+		fmt.Println(id)
+
 		response.Json(w, "Update successful", 200)
 	}
 }
@@ -53,6 +55,9 @@ func (handler *HandlerLink) Update() http.HandlerFunc {
 func (handler *HandlerLink) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("delete")
+
+		id := r.PathValue("id")
+		fmt.Println(id)
 
 		response.Json(w, "Delete successful", 200)
 	}
