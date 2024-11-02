@@ -2,6 +2,7 @@ package link
 
 import (
 	"fmt"
+	"go-demo-6/pkg/request"
 	"go-demo-6/pkg/response"
 	"net/http"
 )
@@ -20,7 +21,7 @@ func NewHandlerLink(router *http.ServeMux, deps LinkHandlerDeps) {
 	}
 
 	router.HandleFunc("POST /link", handler.Create())
-	router.HandleFunc("GET /link/{alias}", handler.GoTo())
+	router.HandleFunc("GET /{hash}", handler.GoTo())
 	router.HandleFunc("PATCH /link/{id}", handler.Update())
 	router.HandleFunc("DELETE /link/{id}", handler.Delete())
 }
@@ -29,13 +30,27 @@ func (handler *HandlerLink) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("create")
 
-		response.Json(w, "Create successful", 200)
+		body, err := request.HandleBody[LinkCreateRequest](&w, r)
+		if err != nil {
+			return
+		}
+
+		link := NewLink(body.Url)
+		createdLink, err := handler.LinkRepository.Create(link)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		response.Json(w, createdLink, 200)
 	}
 }
 
 func (handler *HandlerLink) GoTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("read")
+
+		fmt.Println(r.PathValue("hash"))
 
 		response.Json(w, "Read successful", 200)
 	}
