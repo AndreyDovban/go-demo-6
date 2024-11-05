@@ -50,9 +50,21 @@ func (handler *HandlerLink) GoTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("read")
 
-		fmt.Println(r.PathValue("hash"))
+		hash := r.PathValue("hash")
 
-		response.Json(w, "Read successful", 200)
+		fmt.Println(hash)
+
+		link, err := handler.LinkRepository.GetByHash(hash)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		fmt.Println(link.Url)
+
+		// response.Json(w, "Read successful", 200)
+		w.Header().Set("Content-Type", "application/json")
+		http.Redirect(w, r, link.Url, http.StatusTemporaryRedirect)
 	}
 }
 
