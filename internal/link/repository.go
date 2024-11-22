@@ -1,6 +1,8 @@
 package link
 
-import "go-demo-6/pkg/db"
+import (
+	"go-demo-6/pkg/db"
+)
 
 type LinkRepository struct {
 	Database *db.Db
@@ -22,10 +24,9 @@ func (repo *LinkRepository) Create(link *Link) (*Link, error) {
 
 func (repo *LinkRepository) GetByHash(hash string) (*Link, error) {
 	var link Link
-	result := repo.Database.DB.First(&link, "hash = ?", hash)
+	result := repo.Database.First(&link, "hash = ?", hash)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return &link, nil
-
 }

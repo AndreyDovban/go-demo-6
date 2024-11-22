@@ -19,11 +19,10 @@ func NewHandlerLink(router *http.ServeMux, deps LinkHandlerDeps) {
 	handler := &HandlerLink{
 		LinkRepository: deps.LinkRepository,
 	}
-
 	router.HandleFunc("POST /link", handler.Create())
-	router.HandleFunc("GET /{hash}", handler.GoTo())
 	router.HandleFunc("PATCH /link/{id}", handler.Update())
 	router.HandleFunc("DELETE /link/{id}", handler.Delete())
+	router.HandleFunc("GET /{hash}", handler.GoTo())
 }
 
 func (handler *HandlerLink) Create() http.HandlerFunc {
@@ -42,17 +41,29 @@ func (handler *HandlerLink) Create() http.HandlerFunc {
 			return
 		}
 
-		response.Json(w, createdLink, 200)
+		response.Json(w, createdLink, 201)
+
+	}
+}
+
+func (handler *HandlerLink) Update() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		fmt.Println("update", id)
+	}
+}
+
+func (handler *HandlerLink) Delete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		fmt.Println("delete", id)
 	}
 }
 
 func (handler *HandlerLink) GoTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("read")
-
 		hash := r.PathValue("hash")
-
-		fmt.Println(hash)
+		fmt.Println("go to", hash)
 
 		link, err := handler.LinkRepository.GetByHash(hash)
 		if err != nil {
@@ -60,32 +71,6 @@ func (handler *HandlerLink) GoTo() http.HandlerFunc {
 			return
 		}
 
-		fmt.Println(link.Url)
-
-		// response.Json(w, "Read successful", 200)
-		w.Header().Set("Content-Type", "application/json")
 		http.Redirect(w, r, link.Url, http.StatusTemporaryRedirect)
-	}
-}
-
-func (handler *HandlerLink) Update() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("update")
-
-		id := r.PathValue("id")
-		fmt.Println(id)
-
-		response.Json(w, "Update successful", 200)
-	}
-}
-
-func (handler *HandlerLink) Delete() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("delete")
-
-		id := r.PathValue("id")
-		fmt.Println(id)
-
-		response.Json(w, "Delete successful", 200)
 	}
 }

@@ -14,11 +14,10 @@ func main() {
 	config := configs.LoadConfig()
 	db := db.NewDb(config)
 	router := http.NewServeMux()
-
-	LinkRepository := link.NewLinkRepository(db)
+	linkRepository := link.NewLinkRepository(db)
 
 	auth.NewHandlerAuth(router, auth.AuthHandlerDeps{Config: config})
-	link.NewHandlerLink(router, link.LinkHandlerDeps{LinkRepository: LinkRepository})
+	link.NewHandlerLink(router, link.LinkHandlerDeps{LinkRepository: linkRepository})
 
 	server := &http.Server{
 		Addr:    ":3000",
