@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"fmt"
 	"go-demo-6/configs"
+	"go-demo-6/pkg/jwt"
 	"go-demo-6/pkg/request"
 	"go-demo-6/pkg/response"
 	"net/http"
@@ -34,13 +36,25 @@ func (handler *HandlerAuth) Login() http.HandlerFunc {
 			return
 		}
 
-		name, err := handler.AuthService.Login(body.Email, body.Password)
+		email, err := handler.AuthService.Login(body.Email, body.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		fmt.Println(handler.Config.Auth.Secret)
+		j := jwt.NewJWT(handler.Config.Auth.Secret)
+		s, err := j.Create(email)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		response.Json(w, name+" successful login", 200)
+		data := LoginResponse{
+			Token: s,
+		}
+
+		response.Json(w, data, 200)
 	}
 }
 
@@ -57,6 +71,17 @@ func (handler *HandlerAuth) Register() http.HandlerFunc {
 			return
 		}
 
-		response.Json(w, email+" successful register", 200)
+		j := jwt.NewJWT(handler.Config.Auth.Secret)
+		s, err := j.Create(email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		data := LoginResponse{
+			Token: s,
+		}
+
+		response.Json(w, data, 200)
 	}
 }

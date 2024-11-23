@@ -53,5 +53,5 @@ func (service *AuthService) Login(email, password string) (string, error) {
 		return "", errors.New(ErrWrongCredentials)
 	}
 
-	return user.Name, nil
+	return user.Email, nil
 }
