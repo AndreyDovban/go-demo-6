@@ -9,15 +9,18 @@ import (
 
 type AuthHandlerDeps struct {
 	*configs.Config
+	*AuthService
 }
 
 type HandlerAuth struct {
-	Config *configs.Config
+	*configs.Config
+	*AuthService
 }
 
 func NewHandlerAuth(router *http.ServeMux, deps AuthHandlerDeps) {
 	handler := &HandlerAuth{
-		Config: deps.Config,
+		Config:      deps.Config,
+		AuthService: deps.AuthService,
 	}
 	router.HandleFunc("POST /auth/login", handler.Login())
 	router.HandleFunc("POST /auth/register", handler.Register())
@@ -26,16 +29,34 @@ func NewHandlerAuth(router *http.ServeMux, deps AuthHandlerDeps) {
 
 func (handler *HandlerAuth) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		request.HandleBody[LoginRequest](&w, r)
+		body, err := request.HandleBody[LoginRequest](&w, r)
+		if err != nil {
+			return
+		}
 
-		response.Json(w, "Successful login", 200)
+		name, err := handler.AuthService.Login(body.Email, body.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		response.Json(w, name+" successful login", 200)
 	}
 }
 
 func (handler *HandlerAuth) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		request.HandleBody[RegisterRequest](&w, r)
+		body, err := request.HandleBody[RegisterRequest](&w, r)
+		if err != nil {
+			return
+		}
 
-		response.Json(w, "Successful register", 200)
+		email, err := handler.AuthService.Register(body.Email, body.Password, body.Name)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		response.Json(w, email+" successful register", 200)
 	}
 }
