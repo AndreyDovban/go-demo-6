@@ -6,6 +6,7 @@ import (
 	"go-demo-6/internal/auth"
 	"go-demo-6/internal/link"
 	"go-demo-6/pkg/db"
+	"go-demo-6/pkg/middleware"
 	"net/http"
 )
 
@@ -19,9 +20,14 @@ func main() {
 	auth.NewHandlerAuth(router, auth.AuthHandlerDeps{Config: config})
 	link.NewHandlerLink(router, link.LinkHandlerDeps{LinkRepository: linkRepository})
 
+	stack := middleware.Chain(
+		middleware.CORS,
+		middleware.Logging,
+	)
+
 	server := &http.Server{
 		Addr:    ":3000",
-		Handler: router,
+		Handler: stack(router),
 	}
 
 	fmt.Println("http://localhost:3000")
