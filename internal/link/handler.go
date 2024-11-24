@@ -2,6 +2,7 @@ package link
 
 import (
 	"fmt"
+	"go-demo-6/configs"
 	"go-demo-6/pkg/middleware"
 	"go-demo-6/pkg/request"
 	"go-demo-6/pkg/response"
@@ -12,19 +13,22 @@ import (
 )
 
 type LinkHandlerDeps struct {
-	LinkRepository *LinkRepository
+	*LinkRepository
+	*configs.Config
 }
 
 type HandlerLink struct {
-	LinkRepository *LinkRepository
+	*LinkRepository
+	*configs.Config
 }
 
 func NewHandlerLink(router *http.ServeMux, deps LinkHandlerDeps) {
 	handler := &HandlerLink{
 		LinkRepository: deps.LinkRepository,
+		Config:         deps.Config,
 	}
 	router.HandleFunc("POST /link", handler.Create())
-	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.Update()))
+	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.Update(), handler.Config))
 	router.HandleFunc("DELETE /link/{id}", handler.Delete())
 	router.HandleFunc("GET /{hash}", handler.GoTo())
 }
@@ -59,6 +63,10 @@ func (handler *HandlerLink) Create() http.HandlerFunc {
 
 func (handler *HandlerLink) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		if email, ok := r.Context().Value(middleware.ContextEmailKey).(string); ok {
+			fmt.Println(email)
+		}
 
 		body, err := request.HandleBody[LinkUpdateRequest](&w, r)
 		if err != nil {
