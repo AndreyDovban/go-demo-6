@@ -3,21 +3,22 @@ package link
 import (
 	"go-demo-6/pkg/db"
 
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 type LinkRepository struct {
-	Database *db.Db
+	*db.Db
 }
 
 func NewLinkRepository(database *db.Db) *LinkRepository {
 	return &LinkRepository{
-		Database: database,
+		Db: database,
 	}
 }
 
 func (repo *LinkRepository) Create(link *Link) (*Link, error) {
-	result := repo.Database.DB.Create(link)
+	result := repo.Db.Create(link)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -26,7 +27,7 @@ func (repo *LinkRepository) Create(link *Link) (*Link, error) {
 
 func (repo *LinkRepository) GetByHash(hash string) (*Link, error) {
 	var link Link
-	result := repo.Database.DB.First(&link, "hash = ?", hash)
+	result := repo.Db.First(&link, "hash = ?", hash)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -34,7 +35,7 @@ func (repo *LinkRepository) GetByHash(hash string) (*Link, error) {
 }
 
 func (repo *LinkRepository) Update(link *Link) (*Link, error) {
-	result := repo.Database.DB.Clauses(clause.Returning{}).Updates(link)
+	result := repo.Db.Clauses(clause.Returning{}).Updates(link)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -44,7 +45,7 @@ func (repo *LinkRepository) Update(link *Link) (*Link, error) {
 
 func (repo *LinkRepository) Delete(id uint) error {
 	var link Link
-	result := repo.Database.DB.Delete(&link, "id = ?", id)
+	result := repo.Db.Delete(&link, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -54,7 +55,7 @@ func (repo *LinkRepository) Delete(id uint) error {
 
 func (repo *LinkRepository) GetById(id uint) error {
 	var link Link
-	result := repo.Database.DB.First(&link, "id = ?", id)
+	result := repo.Db.First(&link, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -64,7 +65,7 @@ func (repo *LinkRepository) GetById(id uint) error {
 
 func (repo *LinkRepository) Count() (int64, error) {
 	var count int64
-	result := repo.Database.
+	result := repo.Db.
 		Table("links").
 		Where("deleted_at is null").
 		Count(&count)
@@ -77,9 +78,12 @@ func (repo *LinkRepository) Count() (int64, error) {
 
 func (repo *LinkRepository) GetAll(limit, offset int) ([]Link, error) {
 	var links []Link
-	result := repo.Database.
+	query := repo.Db.
 		Table("links").
 		Where("deleted_at is null").
+		Session(&gorm.Session{})
+
+	result := query.
 		Order("id asc").
 		Limit(limit).
 		Offset(offset).

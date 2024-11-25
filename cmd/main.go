@@ -5,8 +5,10 @@ import (
 	"go-demo-6/configs"
 	"go-demo-6/internal/auth"
 	"go-demo-6/internal/link"
+	"go-demo-6/internal/stat"
 	"go-demo-6/internal/user"
 	"go-demo-6/pkg/db"
+	"go-demo-6/pkg/event"
 	"go-demo-6/pkg/middleware"
 	"net/http"
 )
@@ -16,21 +18,32 @@ func main() {
 	config := configs.LoadConfig()
 	db := db.NewDb(config)
 	router := http.NewServeMux()
+	eventBus := event.NewEventBus()
 
 	// Repositoryes
 	linkRepository := link.NewLinkRepository(db)
 	userRepository := user.NewUserRepository(db)
+	statRepository := stat.NewStatrepository(db)
 
 	// Services
 	authService := auth.NewAuthService(userRepository)
+	statService := stat.NewStatService(&stat.StatServiceDeps{
+		EventBus:       eventBus,
+		StatRepository: statRepository,
+	})
 
 	// Handlers
 	auth.NewHandlerAuth(router, auth.AuthHandlerDeps{
 		Config:      config,
 		AuthService: authService,
 	})
-	link.NewHandlerLink(router, link.LinkHandlerDeps{
+	link.NewLinkHandler(router, link.LinkHandlerDeps{
 		LinkRepository: linkRepository,
+		Config:         config,
+		EventBus:       eventBus,
+	})
+	stat.NewStatHandler(router, &stat.StatHandlerDeps{
+		StatRepository: statRepository,
 		Config:         config,
 	})
 
@@ -44,6 +57,8 @@ func main() {
 		Addr:    ":3000",
 		Handler: stack(router),
 	}
+
+	go statService.AddClick()
 
 	fmt.Println("http://localhost:3000")
 	server.ListenAndServe()
