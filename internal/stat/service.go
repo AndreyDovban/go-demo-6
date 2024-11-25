@@ -1,18 +1,19 @@
 package stat
 
 import (
+	"go-demo-6/pkg/di"
 	"go-demo-6/pkg/event"
 	"log"
 )
 
 type StatServiceDeps struct {
 	EventBus       *event.EventBus
-	StatRepository *StatRepository
+	StatRepository di.IStatRepository
 }
 
 type StatService struct {
 	EventBus       *event.EventBus
-	StatRepository *StatRepository
+	StatRepository di.IStatRepository
 }
 
 func NewStatService(deps *StatServiceDeps) *StatService {
