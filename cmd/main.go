@@ -13,8 +13,7 @@ import (
 	"net/http"
 )
 
-func main() {
-
+func App() http.Handler {
 	config := configs.LoadConfig()
 	db := db.NewDb(config)
 	router := http.NewServeMux()
@@ -47,18 +46,25 @@ func main() {
 		Config:         config,
 	})
 
+	go statService.AddClick()
+
 	// Middlewares
 	stack := middleware.Chain(
 		middleware.CORS,
 		middleware.Logging,
 	)
 
+	return stack(router)
+}
+
+func main() {
+
+	app := App()
+
 	server := &http.Server{
 		Addr:    ":3000",
-		Handler: stack(router),
+		Handler: app,
 	}
-
-	go statService.AddClick()
 
 	fmt.Println("http://localhost:3000")
 	server.ListenAndServe()
