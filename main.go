@@ -1,14 +1,37 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+	"sync"
+	"time"
+)
 
 func main() {
-	x := 10
-	y := double(x)
+	t := time.Now()
+	var wg sync.WaitGroup
 
-	fmt.Println(y)
+	for i := range 10 {
+		wg.Add(1)
+		go getGoogle(&wg, i)
+	}
+
+	wg.Wait()
+
+	fmt.Println(time.Since(t))
+
 }
 
-func double(x int) int {
-	return x * 2
+func getGoogle(wg *sync.WaitGroup, i int) {
+
+	defer wg.Done()
+
+	resp, err := http.Get("https://google.com")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	fmt.Print(i, " : ")
+	fmt.Println(resp.StatusCode)
+
 }
